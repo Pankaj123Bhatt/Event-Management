@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -20,6 +20,9 @@ type Event struct {
 	City  string
 }
 
+//"go.mongodb.org/mongo-driver/bson"
+//"go.mongodb.org/mongo-driver/mongo"
+//"go.mongodb.org/mongo-driver/mongo/options"
 func getEvent(w http.ResponseWriter, r *http.Request) {
 
 	reqBody, err := ioutil.ReadAll(r.Body)
