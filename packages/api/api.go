@@ -8,23 +8,26 @@ import (
 	"log"
 	"net/http"
 	"time"
-
+	"github.com/Pankaj123Bhatt/Event-Management/packages/db"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type Event struct {
-	ID       string    `json:"id"`
-	Title    string    `json:"title"`
-	Datetime time.Time `json:"date"`
-	Price    string    `json:"price"`
-	Artists  []Artist  `json:"artists"`
+ttype Event struct {
+	ID       string  `json:"id" bson:"id"`
+	Title    string  `json: "title" bson:"title,omitempty"`
+	Language string  `json: "language" bson:"language,omitempty"`
+	Genre    string  `json:"genre" bson:"genre,omitempty"`
+	Date     string  `json:"date" bson:"date"`
 	About    string    `json:"about"`
-	Banners  []string  `json:"banners"`
+	Time     string  `json: "time" bson:"time,omitempty"`
+	Price    string  `json: "price" bson:"price,omitempty"`
+	Artist   []Artist `json:"artist" bson:"artist,omitempty" `
+	Banners  []string  `json:"banners,omitempty"`
 }
 
 type Artist struct {
-	Name     string `json:"name"`
-	ImageURL string `json:"imageURL"`
+	Name  string `json:"name" bson:"name,omitempty"`
+	Image string `json:"image" bson:"image,omitempty"`
 }
 
 func CreateEvent(w http.ResponseWriter, req *http.Request) {
@@ -45,8 +48,8 @@ func CreateEvent(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "Problem inserting to DB !")
 		return
 	}
-	fmt.Fprintf(w, "Event created successfully")
-	w.Close()
+	fmt.Fprintf(w, "Event created successfully !")
+	
 
 }
 
@@ -54,16 +57,18 @@ func getEvent(w http.ResponseWriter, r *http.Request) {
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(w, "Problem in reading data !")
+		return
 	}
-	var event string
-	err = json.Unmarshal([]byte(reqBody), &event)
+	var event_id string
+	err = json.Unmarshal([]byte(reqBody), &event_id)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(w, "Data not in proper format !")
+		return
 	}
-	id := req.URL.Query().Get("id")
+	//id := event.ID
 	var result Event
-	filter := bson.M{{"_id", id}}
+	filter := bson.D{{"_id", event_id}}
 	err = db.Collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		fmt.Fprintf(w, "No such events found !")
@@ -77,17 +82,20 @@ func updateEvent(w http.ResponseWriter, r *http.Request) {
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(w, "Problem in reading data !")
+		return
 	}
-	var event string
+	var event Event
 	err = json.Unmarshal([]byte(reqBody), &event)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(w, "Data not in proper format !")
+		return
 	}
+	id := req.URL.Query().Get("id")
+	filter := bson.D{{"_id", id}}
+	
 
-	filter := bson.D{{"name", event}}
-
-	update := bson.D{{"$set", bson.D{{"price", "50"}, {"city", "London"}}}}
+	update := bson.D{{"$set", event}}
 
 	updateResult, err := db.Collection.UpdateOne(context.TODO(), filter, update)
 	if updateResult.ModifiedCount == 0 {
@@ -101,15 +109,17 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(w, "Problem in reading data !")
+		return
 	}
-	var event string
-	err = json.Unmarshal([]byte(reqBody), &event)
+	var event_id string
+	err = json.Unmarshal([]byte(reqBody), &event_id)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(w, "Data not in proper format !")
+		return
 	}
 
-	filter := bson.D{{"name", event}}
+	filter := bson.M{{"_id", event_id}}
 	deleteResult, err := db.Collection.DeleteOne(context.TODO(), filter)
 	if deleteResult.DeletedCount == 0 {
 		fmt.Fprintf(w, "No such events found !")
@@ -120,17 +130,19 @@ func deleteEvent(w http.ResponseWriter, r *http.Request) {
 
 func HandleEvent(w http.ResponseWriter, req *http.Request) {
 
-	//id := req.URL.Query().Get("id")
+	
 	switch req.Method {
-	//Read event data
+	
 	case http.MethodGet:
 		getEvent(w, req)
-	//Update event data
+	
 	case http.MethodPut:
 		updateEvent(w, req)
-	//Delete event data
+	
 	case http.MethodDelete:
 		deleteEvent(w, req)
+
 	default:
+		fmt.Fprintf(w, "No such Handle event API found !")
 	}
 }

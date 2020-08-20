@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+
+	_ "github.com/Pankaj123Bhatt/Event-Management/packages/api"
+	"github.com/Pankaj123Bhatt/Event-Management/packages/db"
 )
 
 func main() {
@@ -12,13 +15,7 @@ func main() {
 		log.Fatal(err)
 	}
 	db.Collection = collection
-
-	/*NewServeMux()
-	mux.HandleFunc("/events", apiH.ListEvents)
-	mux.HandleFunc("/event/create", apiH.CreateEvent)
-	mux.HandleFunc("/event", apiH.HandleEvent)*/
-
 	http.HandleFunc("/createEvent", api.createEvent)
 	http.HandleFunc("/handleEvent", api.handleEvent)
-	http.ListenAndServe(port, nil)
+	log.fatal(http.ListenAndServe(port, nil))
 }

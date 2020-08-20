@@ -8,17 +8,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-/*type mongoCollection struct {
-	collection mongo.Collection
-}*/
 var Collection mongo.Collection
 
 func Init() (mongo.Collection, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	user := "user1234"    //read from file
+	pass := "1234"        //read from file
+	cluster := "cluster0" //read from file
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(
-		"mongodb+srv://user1234:1234@cluster0.fun2x.mongodb.net/EventManager?retryWrites=true&w=majority", //read from file
+		"mongodb+srv://"+user+":"+pass+"@"+cluster+".fun2x.mongodb.net/EventManager?retryWrites=true&w=majority",
 	))
 	if err != nil {
 		return nil, err
